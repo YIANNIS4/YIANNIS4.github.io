@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yiannis Kastritis — Football Data Analyst</title>
+<meta property="og:title" content="Yiannis Kastritis — Football Data Analyst">
+<meta property="og:description" content="Projects in off-ball movement, defensive transitions and player profiling using SkillCorner and StatsBomb open data. Includes a live Streamlit scouting dashboard.">
+<meta property="og:image" content="https://yiannis-kastritis.github.io/og-image.png">
+<meta property="og:url" content="https://yiannis-kastritis.github.io">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F5F0;
+    --ink: #1A1A18;
+    --ink-mid: #4A4A45;
+    --ink-light: #9A9A92;
+    --accent: #2D5A3D;
+    --accent-warm: #C8621A;
+    --rule: #D8D5CE;
+    --card-bg: #FFFFFF;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.25rem 3rem;
+    background: rgba(247,245,240,0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+  }
+  .nav-logo {
+    font-family: 'DM Mono', monospace; font-size: 0.75rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink); text-decoration: none;
+  }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-mid); text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* HERO */
+  .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; padding-top: 5rem; }
+  .hero-left {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 5rem 3rem; border-right: 1px solid var(--rule);
+    opacity: 0; animation: fadeUp 0.9s ease forwards 0.2s;
+  }
+  .hero-tag {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 1.5rem;
+  }
+  .hero-name {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.8rem, 5vw, 4.5rem);
+    line-height: 1.08; letter-spacing: -0.02em;
+    color: var(--ink); margin-bottom: 1.5rem;
+  }
+  .hero-name em { font-style: italic; color: var(--accent); }
+  .hero-sub { font-size: 1rem; color: var(--ink-mid); max-width: 38ch; line-height: 1.7; margin-bottom: 2.5rem; }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    padding: 0.9rem 1.75rem; background: var(--ink); color: var(--bg);
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; transition: background 0.2s; width: fit-content;
+  }
+  .hero-cta:hover { background: var(--accent); }
+  .hero-right {
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 5rem 3rem; opacity: 0; animation: fadeUp 0.9s ease forwards 0.5s;
+  }
+  .hero-stats { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--rule); margin-bottom: 2rem; }
+  .stat { padding: 1.5rem; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+  .stat:nth-child(2n) { border-right: none; }
+  .stat:nth-child(3), .stat:nth-child(4) { border-bottom: none; }
+  .stat-num { font-family: 'DM Serif Display', serif; font-size: 2rem; color: var(--accent); display: block; margin-bottom: 0.25rem; }
+  .stat-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-light); }
+  .hero-pitch {
+    font-family: 'DM Serif Display', serif; font-size: 1.15rem;
+    font-style: italic; color: var(--ink-mid); line-height: 1.55;
+    padding-left: 1.25rem; border-left: 2px solid var(--accent);
+  }
+
+  /* SECTIONS */
+  section { padding: 6rem 3rem; }
+  section + section { border-top: 1px solid var(--rule); }
+  .section-label {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 0.75rem;
+  }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1.15; margin-bottom: 3rem; max-width: 22ch;
+  }
+
+  /* PROJECTS */
+  .projects-wrap { max-width: 1200px; margin: 0 auto; }
+  .projects-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
+  .projects-grid .project-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .project-card {
+    background: var(--card-bg); padding: 2.5rem;
+    display: flex; flex-direction: column;
+    transition: background 0.2s; text-decoration: none; color: inherit;
+  }
+  .project-card:hover { background: #F0EDE6; }
+  .project-num { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; color: var(--ink-light); margin-bottom: 1.5rem; }
+  .project-title { font-family: 'DM Serif Display', serif; font-size: 1.4rem; line-height: 1.2; margin-bottom: 0.75rem; color: var(--ink); }
+  .project-desc { font-size: 0.88rem; color: var(--ink-mid); line-height: 1.65; flex: 1; margin-bottom: 1.5rem; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.5rem; }
+  .tag { font-family: 'DM Mono', monospace; font-size: 0.62rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.3rem 0.65rem; border: 1px solid var(--rule); color: var(--ink-mid); }
+  .tag.highlight { background: var(--accent); color: white; border-color: var(--accent); }
+  .project-link { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); display: inline-flex; align-items: center; gap: 0.5rem; }
+  .project-link::after { content: '→'; transition: transform 0.2s; }
+  .project-card:hover .project-link::after { transform: translateX(4px); }
+
+  /* STREAMLIT SHOWCASE */
+  .app-showcase { max-width: 1200px; margin: 0 auto; }
+  .app-showcase-inner { border: 1px solid var(--rule); background: var(--card-bg); display: grid; grid-template-columns: 1fr 1fr; }
+  .app-showcase-left { padding: 3.5rem; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid var(--rule); }
+  .app-badge {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    font-family: 'DM Mono', monospace; font-size: 0.65rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: white; background: var(--accent);
+    padding: 0.35rem 0.85rem; margin-bottom: 1.5rem; width: fit-content;
+  }
+  .app-badge::before {
+    content: ''; width: 6px; height: 6px;
+    background: #7FD99A; border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .app-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; line-height: 1.2; margin-bottom: 1rem; }
+  .app-desc { font-size: 0.88rem; color: var(--ink-mid); line-height: 1.7; margin-bottom: 2rem; }
+  .app-features { list-style: none; margin-bottom: 2.5rem; }
+  .app-features li {
+    font-family: 'DM Mono', monospace; font-size: 0.7rem;
+    letter-spacing: 0.05em; color: var(--ink-mid);
+    padding: 0.5rem 0; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 0.75rem;
+  }
+  .app-features li::before { content: '✓'; color: var(--accent); font-weight: 500; }
+  .app-launch-btn {
+    display: inline-flex; align-items: center; gap: 0.75rem;
+    padding: 1rem 2rem; background: var(--ink); color: var(--bg);
+    font-family: 'DM Mono', monospace; font-size: 0.72rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    text-decoration: none; transition: background 0.2s; width: fit-content;
+  }
+  .app-launch-btn:hover { background: var(--accent); }
+  .app-launch-btn::after { content: ' ↗'; }
+  .app-showcase-right {
+    background: #0E1117; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 3rem; position: relative; overflow: hidden; min-height: 420px;
+  }
+  .app-showcase-right::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(45,90,61,0.3) 0%, transparent 70%);
+  }
+  .app-mockup {
+    position: relative; z-index: 1; width: 100%; max-width: 380px;
+    background: #1A1D27; border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 4px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+  }
+  .mockup-bar {
+    background: #262730; padding: 0.6rem 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mockup-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .mockup-dot:nth-child(1) { background: #FF5F57; }
+  .mockup-dot:nth-child(2) { background: #FFBD2E; }
+  .mockup-dot:nth-child(3) { background: #28C840; }
+  .mockup-url { font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.3); margin-left: 0.5rem; }
+  .mockup-body { padding: 1.25rem; }
+  .mockup-sidebar { background: #262730; padding: 0.75rem; margin-bottom: 0.75rem; border-radius: 2px; }
+  .mockup-sidebar-label { font-family: 'DM Mono', monospace; font-size: 0.55rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+  .mockup-select { background: #1A1D27; border: 1px solid rgba(255,255,255,0.1); border-radius: 2px; padding: 0.4rem 0.6rem; width: 100%; font-family: 'DM Mono', monospace; font-size: 0.6rem; color: rgba(255,255,255,0.7); margin-bottom: 0.4rem; display: block; }
+  .mockup-chart { background: #262730; border-radius: 2px; padding: 0.75rem; margin-bottom: 0.5rem; height: 90px; display: flex; align-items: flex-end; gap: 4px; }
+  .chart-bar { flex: 1; background: var(--accent); opacity: 0.7; border-radius: 1px 1px 0 0; }
+  .chart-bar:nth-child(1) { height: 80%; }
+  .chart-bar:nth-child(2) { height: 70%; opacity: 0.5; }
+  .chart-bar:nth-child(3) { height: 90%; opacity: 0.8; }
+  .chart-bar:nth-child(4) { height: 55%; opacity: 0.4; }
+  .chart-bar:nth-child(5) { height: 75%; opacity: 0.6; }
+  .chart-bar:nth-child(6) { height: 85%; opacity: 0.75; }
+  .chart-bar:nth-child(7) { height: 45%; opacity: 0.35; }
+  .chart-bar:nth-child(8) { height: 95%; }
+  .mockup-radar { background: #262730; border-radius: 2px; padding: 0.75rem; height: 90px; display: flex; align-items: center; justify-content: center; }
+  .radar-svg { width: 70px; height: 70px; opacity: 0.8; }
+
+  /* ABOUT */
+  .about-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 5rem; max-width: 1200px; margin: 0 auto; }
+  .about-text p { font-size: 0.95rem; color: var(--ink-mid); line-height: 1.8; margin-bottom: 1.25rem; }
+  .about-text p strong { color: var(--ink); font-weight: 500; }
+  .skills-group { margin-bottom: 2rem; }
+  .skills-group-label { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-light); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--rule); }
+  .skills-list { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+  .skill-pill { font-size: 0.82rem; color: var(--ink-mid); padding: 0.35rem 0.85rem; background: var(--bg); border: 1px solid var(--rule); }
+
+  /* EXPERIENCE */
+  .exp-wrap { max-width: 1200px; margin: 0 auto; }
+  .exp-list { display: flex; flex-direction: column; }
+  .exp-item {
+    display: grid; grid-template-columns: 200px 1fr; gap: 3rem;
+    padding: 2rem 0; border-bottom: 1px solid var(--rule);
+    opacity: 1; transform: translateY(0);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .exp-item.animate { opacity: 0; transform: translateY(16px); }
+  .exp-item.animate.visible { opacity: 1; transform: translateY(0); }
+  .exp-org { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-light); padding-top: 0.2rem; line-height: 1.6; }
+  .exp-role { font-family: 'DM Serif Display', serif; font-size: 1.15rem; margin-bottom: 0.4rem; }
+  .exp-desc { font-size: 0.88rem; color: var(--ink-mid); line-height: 1.65; }
+  .exp-roles-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem; }
+  .exp-role-tag { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.25rem 0.6rem; border: 1px solid var(--accent); color: var(--accent); }
+
+  /* CONTACT */
+  .contact-wrap { text-align: center; max-width: 600px; margin: 0 auto; padding: 2rem 0; }
+  .contact-wrap .section-title { max-width: 100%; }
+  .contact-sub { font-size: 0.95rem; color: var(--ink-mid); margin-bottom: 2.5rem; line-height: 1.7; }
+  .contact-links { display: flex; justify-content: center; gap: 1.5rem; flex-wrap: wrap; }
+  .contact-link { font-family: 'DM Mono', monospace; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); text-decoration: none; padding: 0.85rem 1.5rem; border: 1px solid var(--rule); transition: all 0.2s; }
+  .contact-link:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .contact-link.primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .contact-link.primary:hover { background: var(--ink); border-color: var(--ink); }
+
+  footer { border-top: 1px solid var(--rule); padding: 1.5rem 3rem; display: flex; justify-content: space-between; align-items: center; }
+  footer span { font-family: 'DM Mono', monospace; font-size: 0.65rem; letter-spacing: 0.08em; color: var(--ink-light); }
+
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-left { padding: 3rem 1.5rem 2rem; border-right: none; border-bottom: 1px solid var(--rule); }
+    .hero-right { padding: 2rem 1.5rem 3rem; }
+    section { padding: 4rem 1.5rem; }
+    .about-wrap { grid-template-columns: 1fr; gap: 2.5rem; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .app-showcase-inner { grid-template-columns: 1fr; }
+    .app-showcase-right { min-height: 280px; }
+    .exp-item { grid-template-columns: 1fr; gap: 0.5rem; }
+    footer { flex-direction: column; gap: 0.5rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="#">YK</a>
+  <ul class="nav-links">
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#app">Live App</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#experience">Experience</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-tag">Football Data Analyst</p>
+    <h1 class="hero-name">Yiannis<br><em>Kastritis</em></h1>
+    <p class="hero-sub">I analyse how players and teams create, concede, and transition value — combining tracking and event data to produce insights across off-ball movement, defensive transitions, opposition analysis, and player profiling.</p>
+    <a href="#projects" class="hero-cta">View my work</a>
+  </div>
+  <div class="hero-right">
+    <div class="hero-stats">
+      <div class="stat"><span class="stat-num">3</span><span class="stat-label">Portfolio projects</span></div>
+      <div class="stat"><span class="stat-num">MSc</span><span class="stat-label">Football Data Analytics</span></div>
+      <div class="stat"><span class="stat-num">3</span><span class="stat-label">Club environments</span></div>
+      <div class="stat"><span class="stat-num">NHS</span><span class="stat-label">Data & decision-making</span></div>
+    </div>
+    <p class="hero-pitch">"My background in sports therapy and healthcare gives me a different lens — pattern recognition, physical performance, and structured thinking under pressure."</p>
+  </div>
+</section>
+
+<section>
+  <div class="projects-wrap" id="projects">
+    <p class="section-label">Work</p>
+    <h2 class="section-title">Selected projects</h2>
+    <div class="projects-grid">
+
+      <a class="project-card" href="https://github.com/YIANNIS4" target="_blank">
+        <p class="project-num">01 — Flagship</p>
+        <h3 class="project-title">Off-Ball Movement & Attacking Threat</h3>
+        <p class="project-desc">Using SkillCorner open tracking data (A-League) to quantify how off-ball runs contribute to attacking value. Cross-receiver runs generate ~5× more xThreat than support runs. Transitions significantly amplify run value. Movement consistently progresses play into central high-value zones.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Tracking Data</span>
+          <span class="tag">SkillCorner</span>
+          <span class="tag">xThreat</span>
+          <span class="tag">Run Classification</span>
+          <span class="tag">Player Profiling</span>
+        </div>
+        <span class="project-link">View project</span>
+      </a>
+
+      <a class="project-card" href="https://github.com/YIANNIS4/football-role-clustering" target="_blank">
+        <p class="project-num">02 — MSc Thesis</p>
+        <h3 class="project-title">Tactical Role Profiling & Clustering</h3>
+        <p class="project-desc">MSc thesis project redefining player roles using PCA and K-Means clustering across La Liga, Ligue 1, and Serie A. Delivered as a live interactive Streamlit dashboard with radar charts, player comparison tools, and tactical role filters — built for scouting workflows.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Live App</span>
+          <span class="tag">PCA</span>
+          <span class="tag">K-Means</span>
+          <span class="tag">Streamlit</span>
+          <span class="tag">Scouting</span>
+        </div>
+        <span class="project-link">View project</span>
+      </a>
+
+      <a class="project-card" href="https://github.com/YIANNIS4" target="_blank">
+        <p class="project-num">03 — Pipeline</p>
+        <h3 class="project-title">Regain → Progression Pipeline</h3>
+        <p class="project-desc">Linking defensive actions to attacking outcomes by tracking what happens in the seconds immediately after a team wins the ball back. Analyses how teams convert defensive moments into structured attacks — bridging defensive and offensive phases of play.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Transitions</span>
+          <span class="tag">Event Data</span>
+          <span class="tag">Pipeline</span>
+          <span class="tag">Phase Analysis</span>
+        </div>
+        <span class="project-link">View project</span>
+      </a>
+
+
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="app-showcase" id="app">
+    <p class="section-label">Live Tool</p>
+    <h2 class="section-title">Interactive scouting dashboard</h2>
+    <div class="app-showcase-inner">
+      <div class="app-showcase-left">
+        <span class="app-badge">Live App</span>
+        <h3 class="app-title">Tactical Role Profiling Dashboard</h3>
+        <p class="app-desc">An interactive Streamlit application built from my MSc thesis. Explore player roles and performance metrics across Europe's top leagues — designed to support scouting workflows and tactical decision-making.</p>
+        <ul class="app-features">
+          <li>Positional dashboards — Defenders, Midfielders, Forwards</li>
+          <li>Tactical role filters by data-driven cluster group</li>
+          <li>Player comparison via radar & bar charts</li>
+          <li>PCA-derived Key Performance Areas</li>
+          <li>Custom metric selection & raw data table</li>
+        </ul>
+        <a class="app-launch-btn" href="https://football-role-clustering-ypguqyzfku3zq7vkatqgef.streamlit.app/" target="_blank">Launch app</a>
+      </div>
+      <div class="app-showcase-right">
+        <div class="app-mockup">
+          <div class="mockup-bar">
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <div class="mockup-dot"></div>
+            <span class="mockup-url">football-role-clustering.streamlit.app</span>
+          </div>
+          <div class="mockup-body">
+            <div class="mockup-sidebar">
+              <div class="mockup-sidebar-label">Position</div>
+              <div class="mockup-select">Midfielders ▾</div>
+              <div class="mockup-sidebar-label">Tactical Role</div>
+              <div class="mockup-select">Ball-Winning Midfielder ▾</div>
+            </div>
+            <div class="mockup-chart">
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+              <div class="chart-bar"></div>
+            </div>
+            <div class="mockup-radar">
+              <svg class="radar-svg" viewBox="0 0 100 100">
+                <polygon points="50,10 90,35 75,80 25,80 10,35" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1"/>
+                <polygon points="50,25 75,42 65,68 35,68 25,42" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                <polygon points="50,40 60,50 55,62 45,62 40,50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="1"/>
+                <polygon points="50,18 82,38 70,74 30,74 18,38" fill="rgba(45,90,61,0.4)" stroke="#2D5A3D" stroke-width="1.5"/>
+                <circle cx="50" cy="50" r="2" fill="rgba(255,255,255,0.3)"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="about-wrap" id="about">
+    <div>
+      <p class="section-label">About</p>
+      <h2 class="section-title">A different kind of analyst</h2>
+      <div class="about-text">
+        <p>I'm an early-career football data analyst with a hybrid background combining <strong>tactical football analysis</strong>, <strong>data analytics</strong>, and <strong>sports therapy and healthcare</strong>.</p>
+        <p>My work sits at the intersection of tactical insight and data-driven analysis, with a particular focus on <strong>off-ball movement</strong>, <strong>transitions</strong>, and <strong>spatial behaviour</strong> — areas where tracking data is reshaping how we understand the game.</p>
+        <p>Before moving fully into data, I worked as a <strong>Diabetes Specialist Nurse with the NHS</strong> — an environment that built strong pattern recognition, structured decision-making, and the ability to communicate complex findings to non-technical stakeholders. That background translates directly into how I approach football data.</p>
+        <p>I hold an <strong>MSc in Football Data Analytics</strong> and have worked in real football environments across scouting, opposition analysis, and club governance — including time with <strong>Portland Thorns (NWSL)</strong>, <strong>US Mondorf</strong>, and <strong>Athenians FC</strong>.</p>
+      </div>
+    </div>
+    <div>
+      <p class="section-label" style="margin-bottom:1.5rem;">Skills</p>
+      <div class="skills-group">
+        <p class="skills-group-label">Technical</p>
+        <div class="skills-list">
+          <span class="skill-pill">Python</span><span class="skill-pill">pandas</span>
+          <span class="skill-pill">Streamlit</span><span class="skill-pill">matplotlib</span>
+          <span class="skill-pill">seaborn</span><span class="skill-pill">SQL</span><span class="skill-pill">Tableau</span>
+        </div>
+      </div>
+      <div class="skills-group">
+        <p class="skills-group-label">Data & Methods</p>
+        <div class="skills-list">
+          <span class="skill-pill">Tracking Data</span><span class="skill-pill">Event Data</span>
+          <span class="skill-pill">PCA</span><span class="skill-pill">K-Means</span>
+          <span class="skill-pill">xThreat</span><span class="skill-pill">Spatial Analysis</span>
+        </div>
+      </div>
+      <div class="skills-group">
+        <p class="skills-group-label">Football & Domain</p>
+        <div class="skills-list">
+          <span class="skill-pill">Off-ball Movement</span><span class="skill-pill">Transitions</span>
+          <span class="skill-pill">Opposition Analysis</span><span class="skill-pill">Player Profiling</span>
+          <span class="skill-pill">Biomechanics</span><span class="skill-pill">Load & Fatigue</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="exp-wrap" id="experience">
+    <p class="section-label">Experience</p>
+    <h2 class="section-title">Where I've worked</h2>
+    <div class="exp-list">
+
+      <div class="exp-item">
+        <div class="exp-org">Portland Thorns<br>via Sports Data Campus</div>
+        <div>
+          <p class="exp-role">Applied Opposition Analysis — NWSL Context</p>
+          <p class="exp-desc">Applied opposition analysis project developed through Sports Data Campus, structured around a Portland Thorns (NWSL) scenario. Used IMPECT-style event data to identify patterns around regains, box entries, and transitions — delivered as a coach-facing report within a professional analysis framework.</p>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-org">US Mondorf<br>Video Scout</div>
+        <div>
+          <p class="exp-role">Video Scout</p>
+          <p class="exp-desc">Match analysis, player evaluation reports, and tactical observation in a real football environment. Developed the ability to communicate data insights clearly in football language.</p>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-org">Athenians FC<br>Club</div>
+        <div>
+          <div class="exp-roles-list">
+            <span class="exp-role-tag">Board Member</span>
+            <span class="exp-role-tag">Tactical Analyst</span>
+            <span class="exp-role-tag">Video Analyst</span>
+            <span class="exp-role-tag">Player</span>
+          </div>
+          <p class="exp-role">Multi-role Club Involvement</p>
+          <p class="exp-desc">Involved at Athenians FC across four dimensions — as a board member contributing to club-level decisions, as a tactical and video analyst producing match and opponent analysis, and as a player with first-hand understanding of game structures from within the environment.</p>
+        </div>
+      </div>
+
+      <div class="exp-item">
+        <div class="exp-org">NHS<br>Healthcare</div>
+        <div>
+          <p class="exp-role">Diabetes Specialist Nurse</p>
+          <p class="exp-desc">Decision-making under pressure, pattern recognition from complex data, and structured communication with non-technical stakeholders. A background that directly informs how I approach analytical problems in football — particularly in physical performance and load management contexts.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="contact-wrap" id="contact">
+    <p class="section-label">Contact</p>
+    <h2 class="section-title">Let's talk football data</h2>
+    <p class="contact-sub">Open to roles at data companies, clubs, and hybrid analysis environments. Particularly interested in tracking data, off-ball movement, and transition analysis.</p>
+    <div class="contact-links">
+      <a class="contact-link primary" href="https://www.linkedin.com/in/yiannis-kastritis-a417bb122" target="_blank">LinkedIn</a>
+      <a class="contact-link" href="https://github.com/YIANNIS4" target="_blank">GitHub</a>
+      <a class="contact-link" href="/cdn-cgi/l/email-protection#046d6b656a6a6d776f657770766d706d7730446369656d682a676b69">Email</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Yiannis Kastritis — Football Data Analyst</span>
+  <span>© 2026</span>
+</footer>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+  const observer = new Intersecti
