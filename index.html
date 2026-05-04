@@ -292,7 +292,7 @@
   </div>
   <div class="hero-right">
     <div class="hero-stats">
-      <div class="stat"><span class="stat-num">3</span><span class="stat-label">Portfolio projects</span></div>
+      <div class="stat"><span class="stat-num">4</span><span class="stat-label">Portfolio projects</span></div>
       <div class="stat"><span class="stat-num">MSc</span><span class="stat-label">Football Data Analytics</span></div>
       <div class="stat"><span class="stat-num">3</span><span class="stat-label">Club environments</span></div>
       <div class="stat"><span class="stat-num">NHS</span><span class="stat-label">Data & decision-making</span></div>
@@ -307,10 +307,25 @@
     <h2 class="section-title">Selected projects</h2>
     <div class="projects-grid">
 
-      <a class="project-card" href="https://github.com/YIANNIS4" target="_blank">
+      <a class="project-card" href="https://github.com/YIANNIS4/off-ball-transitions-skillcorner" target="_blank">
         <p class="project-num">01 — Flagship</p>
+        <h3 class="project-title">Off-Ball Run Value in Transitions</h3>
+        <p class="project-desc">A deeper investigation into what makes off-ball runs valuable — focusing specifically on transition situations using SkillCorner open tracking data (A-League). Context, timing, and movement combinations explain run value far better than run type alone. Late-phase runs generate 3× more threat than early runs. Cross-receiver combinations with forward and support runs produce 2–3× more value than isolated movements. Player profiles reveal three distinct transition roles: finisher, facilitator, and connector.</p>
+        <div class="project-tags">
+          <span class="tag highlight">Tracking Data</span>
+          <span class="tag">SkillCorner</span>
+          <span class="tag">xThreat</span>
+          <span class="tag">Sequence Analysis</span>
+          <span class="tag">Player Profiling</span>
+          <span class="tag">Physical Intensity</span>
+        </div>
+        <span class="project-link">View project</span>
+      </a>
+
+      <a class="project-card" href="https://github.com/YIANNIS4/off-ball-movement-analysis" target="_blank">
+        <p class="project-num">02 — Series</p>
         <h3 class="project-title">Off-Ball Movement & Attacking Threat</h3>
-        <p class="project-desc">Using SkillCorner open tracking data (A-League) to quantify how off-ball runs contribute to attacking value. Cross-receiver runs generate ~5× more xThreat than support runs. Transitions significantly amplify run value. Movement consistently progresses play into central high-value zones.</p>
+        <p class="project-desc">The first project in a two-part series using SkillCorner open tracking data (A-League). Quantifies how off-ball runs contribute to attacking value across all phases of play. Cross-receiver runs generate ~5× more xThreat than support runs. Transitions significantly amplify run value. Movement consistently progresses play into central high-value zones.</p>
         <div class="project-tags">
           <span class="tag highlight">Tracking Data</span>
           <span class="tag">SkillCorner</span>
@@ -322,7 +337,7 @@
       </a>
 
       <a class="project-card" href="https://github.com/YIANNIS4/football-role-clustering" target="_blank">
-        <p class="project-num">02 — MSc Thesis</p>
+        <p class="project-num">03 — MSc Thesis</p>
         <h3 class="project-title">Tactical Role Profiling & Clustering</h3>
         <p class="project-desc">MSc thesis project redefining player roles using PCA and K-Means clustering across La Liga, Ligue 1, and Serie A. Delivered as a live interactive Streamlit dashboard with radar charts, player comparison tools, and tactical role filters — built for scouting workflows.</p>
         <div class="project-tags">
@@ -336,7 +351,7 @@
       </a>
 
       <a class="project-card" href="https://github.com/YIANNIS4" target="_blank">
-        <p class="project-num">03 — Pipeline</p>
+        <p class="project-num">04 — Pipeline</p>
         <h3 class="project-title">Regain → Progression Pipeline</h3>
         <p class="project-desc">Linking defensive actions to attacking outcomes by tracking what happens in the seconds immediately after a team wins the ball back. Analyses how teams convert defensive moments into structured attacks — bridging defensive and offensive phases of play.</p>
         <div class="project-tags">
@@ -347,8 +362,6 @@
         </div>
         <span class="project-link">View project</span>
       </a>
-
-
 
     </div>
   </div>
@@ -511,7 +524,7 @@
     <div class="contact-links">
       <a class="contact-link primary" href="https://www.linkedin.com/in/yiannis-kastritis-a417bb122" target="_blank">LinkedIn</a>
       <a class="contact-link" href="https://github.com/YIANNIS4" target="_blank">GitHub</a>
-      <a class="contact-link" href="/cdn-cgi/l/email-protection#046d6b656a6a6d776f657770766d706d7730446369656d682a676b69">Email</a>
+      <a class="contact-link" href="mailto:yianniskastritis@gmail.com">Email</a>
     </div>
   </div>
 </section>
@@ -521,5 +534,20 @@
   <span>© 2026</span>
 </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
-  const observer = new Intersecti
+<script>
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.exp-item').forEach(el => {
+    el.classList.add('animate');
+    observer.observe(el);
+  });
+</script>
+
+</body>
+</html>
